@@ -24,8 +24,12 @@ test/y_test.txt: Test labels
 About the script
 run_analysis.R contains all the code to perform the analysis described in 5 steps.
 
-Download the dataset then unzip the dataset
-Merging the training and test sets to create one dataset
+1.Download the dataset then unzip the dataset
+
+2.Merging the training and test sets to create one dataset
+
 3.Extracting only the measurements on the mean and standard deviation for each measurement
+
 4.Using descriptive activity names to name the activities in the dataset
+
 5.Create tidy dataset
