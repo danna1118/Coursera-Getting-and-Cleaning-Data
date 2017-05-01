@@ -1,0 +1,93 @@
+---
+title: "Cousera project 2"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##1.Synopsis
+This analysis examines weather data from the National Oceanic and Atmospheric Administration (NOAA). The data list weather events, when they occurred, and several measures of adverse events associated with each event. For this analysis we are interested in the toll that weather events take in terms of injury, death, and property damage.
+
+To examine which weather events are the most destructive, this analysis looks at the rates of injury, death, and property damage for all events since 1990, limited to those for which there are at least 500 occurences since 1990.
+
+##2.Data Processing
+### Loading and preprocessing the data
+
+```{r}
+library(ggplot2)
+storms <- read.csv("storms.csv.bz2",header = TRUE)
+
+reduced_storms <- 
+  storms[,c("EVTYPE", "FATALITIES", "INJURIES", "PROPDMG")]
+reduced_storms$EVTYPE <- 
+  gsub("^HEAT$", "EXCESSIVE HEAT", reduced_storms$EVTYPE)
+reduced_storms$EVTYPE <- 
+  gsub("^TSTM WIND$", "THUNDERSTORM WIND", reduced_storms$EVTYPE)
+reduced_storms$EVTYPE <- 
+  gsub("^THUNDERSTORM WIND$", "THUNDERSTORM WINDS", reduced_storms$EVTYPE)
+
+agg_fatalities<-
+  aggregate(
+    reduced_storms$FATALITIES, 
+    by=list(reduced_storms$EVTYPE), FUN=sum, na.rm=TRUE)
+colnames(agg_fatalities) = c("event.type", "fatality.total")
+fatalities_sorted <- 
+  agg_fatalities[order(-agg_fatalities$fatality.total),] 
+top_fatalities <- fatalities_sorted[1:10,]
+top_fatalities$event.type <- 
+  factor(
+    top_fatalities$event.type, levels=top_fatalities$event.type, 
+    ordered=TRUE)
+#for injures data
+agg_injuries <-
+  aggregate(
+    reduced_storms$INJURIES, 
+    by=list(reduced_storms$EVTYPE), FUN=sum, na.rm=TRUE)
+colnames(agg_injuries) = c("event.type", "injury.total")
+injuries_sorted <- agg_injuries[order(-agg_injuries$injury.total),] 
+top_injuries <- injuries_sorted[1:10,]
+top_injuries$event.type <- 
+  factor(
+    top_injuries$event.type, levels=top_injuries$event.type, 
+    ordered=TRUE)
+
+## property damage
+agg_prop_damage <-
+  aggregate(
+    reduced_storms$PROPDMG, 
+    by=list(reduced_storms$EVTYPE), FUN=sum, na.rm=TRUE)
+colnames(agg_prop_damage) = c("event.type", "prop.dmg.total")
+prop_dmg_sorted <- agg_prop_damage[order(-agg_prop_damage$prop.dmg.total),] 
+top_prop_dmg <- prop_dmg_sorted[1:10,]
+top_prop_dmg$event.type <- 
+  factor(
+    top_prop_dmg$event.type, levels=top_prop_dmg$event.type, 
+    ordered=TRUE)
+```
+##Results
+```{r}
+library(ggplot2)
+
+ggplot(data=top_fatalities, aes(x=event.type, y=fatality.total)) + 
+  geom_bar(stat="identity") + xlab("Event type") + ylab("Total fatalities") + 
+  ggtitle("Fatalities By Event Type") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+## same for injuries
+ggplot(data=top_injuries, aes(x=event.type, y=injury.total)) + 
+  geom_bar(stat="identity") + xlab("Event type") + ylab("Total injuries") + 
+  ggtitle("Injuries By Event Type") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+##property damage
+ggplot(data=top_prop_dmg, aes(x=event.type, y=prop.dmg.total)) + 
+  geom_bar(stat="identity") + xlab("Event type") + 
+  ylab("Total property damage") +  ggtitle("Property Damage By Event Type") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
